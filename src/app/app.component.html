@@ -1,0 +1,10 @@
+<div *ngIf="isBrowser" style="display: block; text-align: center;">
+  <h2 style="margin: 0; margin-top: 70px;">FSR Data/Time</h2>
+  <canvas baseChart
+          [data]="lineChartData"
+          [options]="lineChartOptions"
+          [legend]="lineChartLegend"
+          [type]="'line'"
+          style="width: 60%; height: 400px; margin: 0 auto; margin-top: 50px;">
+  </canvas>
+</div>
