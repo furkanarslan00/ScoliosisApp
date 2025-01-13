@@ -1,25 +1,76 @@
-<div *ngIf="isBrowser" style="display: flex; justify-content: center; align-items: flex-start; gap: 20px; margin-top: 70px;">
-  <!-- Line Chart for FSR Data -->
-  <div style="text-align: center; width: 45%;">
-    <h2 style="margin: 0; margin-bottom: 20px;">FSR Data/Time</h2>
-    <canvas baseChart
-            [data]="lineChartData"
-            [options]="lineChartOptions"
-            [legend]="lineChartLegend"
-            [type]="'line'"
-            style="width: 100%; height: 400px;">
-    </canvas>
-  </div>
+<div *ngIf="isBrowser" class="dashboard-container">
+  <div class="charts-grid">
+    <!-- 1. Real-time Line Chart -->
+    <div class="chart-container" *ngIf="dataLoaded">
+      <h2>Real-time Pressure Readings</h2>
+      <canvas
+        baseChart
+        [data]="realtimeChartData"
+        [options]="lineChartOptions2"
+        [legend]="lineChartLegend"
+        [type]="'line'"
+      >
+      </canvas>
+    </div>
 
-  <!-- Bar Chart for Average Pressure -->
-  <div style="text-align: center; width: 45%;">
-    <h2 style="margin: 0; margin-bottom: 20px;">FSR Ortalama Basıncı</h2>
-    <canvas baseChart
-            [data]="averagePressureData"
-            [options]="averagePressureOptions"
-            [legend]="true"
-            [type]="'bar'"
-            style="width: 100%; height: 400px;">
-    </canvas>
+    <!-- 2. Average Pressure Chart -->
+    <div class="chart-container" *ngIf="dataLoaded">
+      <h2>Average Pressure</h2>
+      <canvas
+        baseChart
+        [data]="averageChartData"
+        [options]="barChartOptions"
+        [type]="'bar'"
+      >
+      </canvas>
+    </div>
+
+    <!-- 3. Min/Max Range Chart -->
+    <div class="chart-container" *ngIf="dataLoaded">
+      <h2>Pressure Range</h2>
+      <canvas
+        baseChart
+        [data]="rangeChartData"
+        [options]="barChartOptions"
+        [type]="'bar'"
+      >
+      </canvas>
+    </div>
+
+    <!-- 4. Pressure Distribution -->
+    <div class="chart-container" *ngIf="dataLoaded">
+      <h2>Pressure Distribution</h2>
+      <canvas
+        baseChart
+        [data]="distributionChartData"
+        [options]="pieChartOptions"
+        [type]="'pie'"
+      >
+      </canvas>
+    </div>
+
+    <!-- 5. Hourly Trend -->
+    <div class="chart-container" *ngIf="dataLoaded">
+      <h2>Hourly Trend</h2>
+      <canvas
+        baseChart
+        [data]="trendChartData"
+        [options]="lineChartOptions"
+        [type]="'line'"
+      >
+      </canvas>
+    </div>
+
+    <!-- 6. Threshold Comparison -->
+    <div class="chart-container" *ngIf="dataLoaded">
+      <h2>Threshold Analysis</h2>
+      <canvas
+        baseChart
+        [data]="thresholdChartData"
+        [options]="barChartOptions"
+        [type]="'bar'"
+      >
+      </canvas>
+    </div>
   </div>
 </div>
