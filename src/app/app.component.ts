@@ -121,7 +121,7 @@ export class AppComponent implements OnInit {
     scales: {
       y: {
         beginAtZero: true,
-        max: 400,
+        max: 250,
         title: {
           display: true,
           text: 'Pressure (N)'
@@ -268,9 +268,9 @@ export class AppComponent implements OnInit {
     const high = values.filter(v => v > avg * 1.3).length;
 
     // Calculate threshold comparison
-    const below = values.filter(v => v < 200).length;
-    const within = values.filter(v => v >= 200 && v <= 400).length;
-    const above = values.filter(v => v > 400).length;
+    const below = values.filter(v => v < 96).length;
+    const within = values.filter(v => v >= 96 && v <= 192).length;
+    const above = values.filter(v => v > 192).length;
 
     return { avg, min, max, low, medium, high, below, within, above };
   }
@@ -357,9 +357,9 @@ export class AppComponent implements OnInit {
               };
 
 
-              const lowRange = '< 175'; 
-              const mediumRange = '175 - 325'; 
-              const highRange = '> 325'; 
+              const lowRange = '< 120'; 
+              const mediumRange = '120 - 180'; 
+              const highRange = '> 180'; 
   
               this.distributionChartData = {
                 labels: [`Low (${lowRange})`, `Medium (${mediumRange})`, `High (${highRange})`], // Updated labels with ranges
@@ -392,7 +392,7 @@ export class AppComponent implements OnInit {
   
               this.thresholdChartData = {
                 ...this.thresholdChartData,
-                labels: ['Below (< 200)', 'Within (200 - 400)', 'Above (> 400)'], 
+                labels: ['Below (< 96)', 'Within (96 - 192)', 'Above (> 192)'], 
                 datasets: [{
                   ...this.thresholdChartData.datasets[0],
                   data: [stats.below, stats.within, stats.above]
