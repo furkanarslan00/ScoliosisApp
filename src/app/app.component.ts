@@ -21,7 +21,7 @@ interface SensorData {
 export class AppComponent implements OnInit {
   title = 'scoliosisapp';
   isBrowser: boolean;
-  referencePressure = 250;
+  referencePressure = 96;
   dataLoaded = false;
   selectedSensor: string = 'FSR1'; 
   selectedGraph: string = 'all'; 
