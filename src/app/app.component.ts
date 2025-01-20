@@ -160,6 +160,24 @@ export class AppComponent implements OnInit {
     this.fetchData();
   }
 
+  public barChartOptionsforTresh: ChartOptions<'bar'> = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Number of Readings'
+        }
+      }
+    }
+  };
+
   public barChartOptions: ChartOptions<'bar'> = {
     responsive: true,
     plugins: {
@@ -172,7 +190,7 @@ export class AppComponent implements OnInit {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Pressure (N)'
+          text: 'Pressure(N)'
         }
       }
     }
@@ -250,9 +268,9 @@ export class AppComponent implements OnInit {
     const high = values.filter(v => v > avg * 1.3).length;
 
     // Calculate threshold comparison
-    const below = values.filter(v => v < 400).length;
-    const within = values.filter(v => v >= 400 && v <= 600).length;
-    const above = values.filter(v => v > 600).length;
+    const below = values.filter(v => v < 200).length;
+    const within = values.filter(v => v >= 200 && v <= 400).length;
+    const above = values.filter(v => v > 400).length;
 
     return { avg, min, max, low, medium, high, below, within, above };
   }
@@ -374,11 +392,13 @@ export class AppComponent implements OnInit {
   
               this.thresholdChartData = {
                 ...this.thresholdChartData,
+                labels: ['Below (< 200)', 'Within (200 - 400)', 'Above (> 400)'], 
                 datasets: [{
                   ...this.thresholdChartData.datasets[0],
                   data: [stats.below, stats.within, stats.above]
                 }]
               };
+              
   
               this.dataLoaded = true;
               this.cdr.detectChanges();
