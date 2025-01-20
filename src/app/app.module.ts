@@ -4,6 +4,7 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
 import { NgChartsModule } from 'ng2-charts';
+import { FormsModule } from '@angular/forms';  
 
 @NgModule({
   declarations: [
@@ -12,9 +13,12 @@ import { NgChartsModule } from 'ng2-charts';
   imports: [
     BrowserModule,
     HttpClientModule, 
-    NgChartsModule
+    NgChartsModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+
+

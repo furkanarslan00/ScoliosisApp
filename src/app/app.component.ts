@@ -21,8 +21,13 @@ interface SensorData {
 export class AppComponent implements OnInit {
   title = 'scoliosisapp';
   isBrowser: boolean;
-  referencePressure = 500;
+  referencePressure = 250;
   dataLoaded = false;
+  selectedSensor: string = 'FSR1'; 
+  selectedGraph: string = 'all'; 
+
+
+  public lineChartLegend = true;
 
   // 1. Real-time Line Chart
   public realtimeChartData: ChartData<'line'> = {
@@ -48,34 +53,28 @@ export class AppComponent implements OnInit {
     ],
   };
 
-  public lineChartLegend = true;
-
-  // 2. Average Pressure Bar Chart
-  public averageChartData: ChartData<'bar'> = {
-    labels: ['Average Pressure'],
+   // 2. Daily Trend Chart
+  public dailyTrendChartData: ChartData<'line'> = {
+    labels: [], 
     datasets: [{
-      data: [],
-      label: 'Average Pressure',
-      backgroundColor: '#4CAF50',
+      data: [], 
+      label: 'Daily Average',
+      borderColor: '#FF5722',
+      fill: false,
     }]
   };
 
-  // 3. Min/Max Range Chart
-  public rangeChartData: ChartData<'bar'> = {
-    labels: ['Pressure Range'],
-    datasets: [
-      {
-        data: [],
-        label: 'Minimum',
-        backgroundColor: '#FF9800',
-      },
-      {
-        data: [],
-        label: 'Maximum',
-        backgroundColor: '#F44336',
-      }
-    ]
+   // 3. Hourly Trend Chart
+   public trendChartData: ChartData<'line'> = {
+    labels: [],
+    datasets: [{
+      data: [],
+      label: 'Hourly Average',
+      borderColor: '#9C27B0',
+      fill: false,
+    }]
   };
+  
 
   // 4. Pressure Distribution Chart
   public distributionChartData: ChartData<'pie'> = {
@@ -86,16 +85,16 @@ export class AppComponent implements OnInit {
     }]
   };
 
-  // 5. Hourly Trend Chart
-  public trendChartData: ChartData<'line'> = {
-    labels: [],
+  // 5. Average Pressure Bar Chart
+  public averageChartData: ChartData<'bar'> = {
+    labels: ['Average Pressure'],
     datasets: [{
       data: [],
-      label: 'Hourly Average',
-      borderColor: '#9C27B0',
-      fill: false,
+      label: 'Average Pressure',
+      backgroundColor: '#4CAF50',
     }]
   };
+
 
   // 6. Threshold Comparison Chart
   public thresholdChartData: ChartData<'bar'> = {
@@ -122,6 +121,7 @@ export class AppComponent implements OnInit {
     scales: {
       y: {
         beginAtZero: true,
+        max: 400,
         title: {
           display: true,
           text: 'Pressure (N)'
@@ -155,6 +155,11 @@ export class AppComponent implements OnInit {
     }
   };
 
+  updateCharts() {
+    console.log('Sensor selected:', this.selectedSensor);
+    this.fetchData();
+  }
+
   public barChartOptions: ChartOptions<'bar'> = {
     responsive: true,
     plugins: {
@@ -172,6 +177,33 @@ export class AppComponent implements OnInit {
       }
     }
   };
+
+  private calculateDailyTrend(data: SensorValue[]): { labels: string[]; averages: number[] } {
+    const dailyData = new Map<string, number[]>();
+  
+    // Verileri günlere göre grupla
+    data.forEach(reading => {
+      const date = new Date(reading.timestamp);
+      const day = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;  
+      if (!dailyData.has(day)) {
+        dailyData.set(day, []);
+      }
+      dailyData.get(day)?.push(reading.value);
+    });
+  
+    // Ortalama değerleri hesapla
+    const labels: string[] = [];
+    const averages: number[] = [];
+  
+    dailyData.forEach((values, day) => {
+      labels.push(day);
+      averages.push(values.reduce((a, b) => a + b, 0) / values.length);  
+    });
+  
+    return { labels, averages };
+  }
+
+  
 
   public pieChartOptions: ChartOptions<'pie'> = {
     responsive: true,
@@ -193,9 +225,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     if (this.isBrowser) {
-      this.fetchData(); // Fetch data immediately on init
-      // Uncomment the following line if you want to fetch data every 5 seconds
-      // setInterval(() => this.fetchData(), 5000);
+      this.fetchData(); 
     }
   }
 
@@ -256,98 +286,103 @@ export class AppComponent implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          if (response && response[0] && response[0].values) {
-            const sensorData = response[0].values;
-            const values = sensorData.map(point => point.value);
-            const timestamps = sensorData.map(point =>
-              new Date(point.timestamp).toLocaleTimeString()
-            );
+          if (response && response.length > 0) {
+            const selectedSensorData = response.find(sensor => sensor.name === this.selectedSensor);
+  
+            if (selectedSensorData && selectedSensorData.values) {
+              let sensorData = selectedSensorData.values;
+              const values = sensorData.map(point => point.value);
+              const timestamps = sensorData.map(point =>
+                new Date(point.timestamp).toLocaleTimeString()
+              );
+  
+              // **Real-time Pressure Readings** için son 50 veriyi alıyoruz
+              const realTimeValues = values.length > 100 ? values.slice(-100) : values;
+              const realTimeTimestamps = timestamps.length > 100 ? timestamps.slice(-100) : timestamps;
+  
+              // Referans basıncıyla aynı uzunlukta bir dizi oluşturuyoruz
+              const referenceValues = new Array(realTimeValues.length).fill(this.referencePressure);
+  
+              // **Real-time Pressure Readings** grafiğini güncelle
+              this.realtimeChartData = {
+                labels: realTimeTimestamps,
+                datasets: [
+                  {
+                    data: realTimeValues,
+                    label: 'Real Time Pressure',
+                    fill: true,
+                    borderColor: 'blue',
+                    backgroundColor: 'rgba(75,192,192,0.2)',
+                    tension: 0.4,
+                  },
+                  {
+                    data: referenceValues,
+                    label: 'Reference Pressure',
+                    borderColor: 'red',
+                    borderDash: [10, 5],
+                    pointRadius: 0,
+                    borderWidth: 1,
+                    fill: false,
+                  }
+                ]
+              };
+  
+           
+              const stats = this.calculateStats(values);
+  
+              this.averageChartData = {
+                ...this.averageChartData,
+                datasets: [{
+                  ...this.averageChartData.datasets[0],
+                  data: [stats.avg]
+                }]
+              };
 
-            // Create reference pressure array with the same length as values
-            const referenceValues = new Array(values.length).fill(this.referencePressure);
 
-            // Update realtime chart data with both datasets
-            this.realtimeChartData = {
-              labels: timestamps,
-              datasets: [
-                {
-                  data: values,
-                  label: 'Real Time Pressure',
-                  fill: true,
-                  borderColor: 'blue',
-                  backgroundColor: 'rgba(75,192,192,0.2)',
-                  tension: 0.4,
-                },
-                {
-                  data: referenceValues,
-                  label: 'Reference Pressure',
-                  borderColor: 'red',
-                  borderDash: [10, 5],
-                  pointRadius: 0,
-                  borderWidth: 2,
+              const lowRange = '< 175'; 
+              const mediumRange = '175 - 325'; 
+              const highRange = '> 325'; 
+  
+              this.distributionChartData = {
+                labels: [`Low (${lowRange})`, `Medium (${mediumRange})`, `High (${highRange})`], // Updated labels with ranges
+                datasets: [{
+                  ...this.distributionChartData.datasets[0],
+                  data: [stats.low, stats.medium, stats.high]
+                }]
+              };
+  
+              const trend = this.calculateHourlyTrend(sensorData);
+              this.trendChartData = {
+                ...this.trendChartData,
+                labels: trend.hours.map(h => `${h}:00`),
+                datasets: [{
+                  ...this.trendChartData.datasets[0],
+                  data: trend.averages
+                }]
+              };
+  
+              const dailyTrend = this.calculateDailyTrend(sensorData);
+              this.dailyTrendChartData = {
+                labels: dailyTrend.labels,
+                datasets: [{
+                  data: dailyTrend.averages,
+                  label: 'Daily Average',
+                  borderColor: '#FF5722',
                   fill: false,
-                }
-              ]
-            };
-
-            // Calculate statistics
-            const stats = this.calculateStats(values);
-
-            // Update average chart
-            this.averageChartData = {
-              ...this.averageChartData,
-              datasets: [{
-                ...this.averageChartData.datasets[0],
-                data: [stats.avg]
-              }]
-            };
-
-            // Update range chart
-            this.rangeChartData = {
-              ...this.rangeChartData,
-              datasets: [
-                {
-                  ...this.rangeChartData.datasets[0],
-                  data: [stats.min]
-                },
-                {
-                  ...this.rangeChartData.datasets[1],
-                  data: [stats.max]
-                }
-              ]
-            };
-
-            // Update distribution chart
-            this.distributionChartData = {
-              ...this.distributionChartData,
-              datasets: [{
-                ...this.distributionChartData.datasets[0],
-                data: [stats.low, stats.medium, stats.high]
-              }]
-            };
-
-            // Update hourly trend
-            const trend = this.calculateHourlyTrend(sensorData);
-            this.trendChartData = {
-              ...this.trendChartData,
-              labels: trend.hours.map(h => `${h}:00`),
-              datasets: [{
-                ...this.trendChartData.datasets[0],
-                data: trend.averages
-              }]
-            };
-
-            // Update threshold comparison
-            this.thresholdChartData = {
-              ...this.thresholdChartData,
-              datasets: [{
-                ...this.thresholdChartData.datasets[0],
-                data: [stats.below, stats.within, stats.above]
-              }]
-            };
-
-            this.dataLoaded = true;
-            this.cdr.detectChanges();
+                }]
+              };
+  
+              this.thresholdChartData = {
+                ...this.thresholdChartData,
+                datasets: [{
+                  ...this.thresholdChartData.datasets[0],
+                  data: [stats.below, stats.within, stats.above]
+                }]
+              };
+  
+              this.dataLoaded = true;
+              this.cdr.detectChanges();
+            }
           }
         },
         error: (error) => {
@@ -355,4 +390,6 @@ export class AppComponent implements OnInit {
         }
       });
   }
+  
+  
 }

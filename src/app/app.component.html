@@ -1,75 +1,99 @@
+<div *ngIf="isBrowser" class="select-sensor">
+  <!-- Dropdown for selecting sensor -->
+  <div class="sensor-selection">
+    <label for="sensorSelect">Select Sensor:</label>
+    <select id="sensorSelect" [(ngModel)]="selectedSensor" (change)="updateCharts()">
+      <option value="FSR1">FSR1</option>
+      <option value="FSR2">FSR2</option>
+      <option value="FSR3">FSR3</option>
+    </select>
+  </div>
+
+  <!-- Dropdown for selecting graph -->
+  <div class="graph-selection">
+    <label for="graphSelect">Select Graph:</label>
+    <select id="graphSelect" [(ngModel)]="selectedGraph">
+      <option value="all">All Graphs</option>
+      <option value="pressure">Pressure Readings</option>
+      <option value="dailyTrend">Daily Trend</option>
+      <option value="trend">Hourly Trend</option>
+      <option value="distribution">Pressure Distribution</option>
+      <option value="average">Average Pressure</option>
+      <option value="threshold">Threshold Analysis</option>
+    </select>
+  </div>
+</div>
+
+<!-- Dashboard and Chart Display -->
 <div *ngIf="isBrowser" class="dashboard-container">
   <div class="charts-grid">
     <!-- 1. Real-time Line Chart -->
-    <div class="chart-container" *ngIf="dataLoaded">
+    <div class="chart-container" *ngIf="dataLoaded && (selectedGraph === 'all' || selectedGraph === 'pressure')">
       <h2>Real-time Pressure Readings</h2>
       <canvas
         baseChart
         [data]="realtimeChartData"
         [options]="lineChartOptions2"
         [legend]="lineChartLegend"
-        [type]="'line'"
-      >
+        [type]="'line'">
       </canvas>
     </div>
 
-    <!-- 2. Average Pressure Chart -->
-    <div class="chart-container" *ngIf="dataLoaded">
-      <h2>Average Pressure</h2>
+    <!-- 2. Daily Trend Chart -->
+    <div class="chart-container" *ngIf="dataLoaded && (selectedGraph === 'all' || selectedGraph === 'dailyTrend')">
+      <h2>Daily Trend</h2>
       <canvas
         baseChart
-        [data]="averageChartData"
-        [options]="barChartOptions"
-        [type]="'bar'"
-      >
+        [data]="dailyTrendChartData"
+         [options]="lineChartOptions"  
+         [type]="'line'">
       </canvas>
     </div>
+  
 
-    <!-- 3. Min/Max Range Chart -->
-    <div class="chart-container" *ngIf="dataLoaded">
-      <h2>Pressure Range</h2>
-      <canvas
-        baseChart
-        [data]="rangeChartData"
-        [options]="barChartOptions"
-        [type]="'bar'"
-      >
-      </canvas>
-    </div>
-
-    <!-- 4. Pressure Distribution -->
-    <div class="chart-container" *ngIf="dataLoaded">
-      <h2>Pressure Distribution</h2>
-      <canvas
-        baseChart
-        [data]="distributionChartData"
-        [options]="pieChartOptions"
-        [type]="'pie'"
-      >
-      </canvas>
-    </div>
-
-    <!-- 5. Hourly Trend -->
-    <div class="chart-container" *ngIf="dataLoaded">
+    <!-- 3. Hourly Trend -->
+    <div class="chart-container" *ngIf="dataLoaded && (selectedGraph === 'all' || selectedGraph === 'trend')">
       <h2>Hourly Trend</h2>
       <canvas
         baseChart
         [data]="trendChartData"
         [options]="lineChartOptions"
-        [type]="'line'"
-      >
+        [type]="'line'">
       </canvas>
     </div>
 
+    <!-- 4. Pressure Distribution -->
+    <div class="chart-container" *ngIf="dataLoaded && (selectedGraph === 'all' || selectedGraph === 'distribution')">
+      <h2>Pressure Distribution</h2>
+      <canvas
+        baseChart
+        [data]="distributionChartData"
+        [options]="pieChartOptions"
+        [type]="'pie'">
+      </canvas>
+    </div>
+
+
+        <!-- 5. Average Pressure Chart -->
+        <div class="chart-container" *ngIf="dataLoaded && (selectedGraph === 'all' || selectedGraph === 'average')">
+          <h2>Average Pressure</h2>
+          <canvas
+            baseChart
+            [data]="averageChartData"
+            [options]="barChartOptions"
+            [type]="'bar'">
+          </canvas>
+        </div>
+    
+
     <!-- 6. Threshold Comparison -->
-    <div class="chart-container" *ngIf="dataLoaded">
+    <div class="chart-container" *ngIf="dataLoaded && (selectedGraph === 'all' || selectedGraph === 'threshold')">
       <h2>Threshold Analysis</h2>
       <canvas
         baseChart
         [data]="thresholdChartData"
         [options]="barChartOptions"
-        [type]="'bar'"
-      >
+        [type]="'bar'">
       </canvas>
     </div>
   </div>
